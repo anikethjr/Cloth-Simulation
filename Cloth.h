@@ -13,22 +13,40 @@
 using namespace std;
 using namespace glm;
 
+/**
+ * structure to store color values
+ */
+struct Color {
+    double r, g, b, a;
+};
+
+/**
+ * Defines the cloth piece
+ */
 class Cloth
 {
     double height, width; //height and width of the cloth
-    int num_particles_row, num_particles_col; //number of rows and columns of particles respectively
+    unsigned long num_particles_row, num_particles_col; //number of rows and columns of particles respectively
     double distance_row, distance_col, distance_diagonal; //rest distance between adjacent particles in a row, in a column and diagonally respectively
     vector<vector<Particle> > particles;
     vector<Constraint> constraints;
 
 public:
-    Cloth(double height, double width, int num_particles_row, int num_particles_col, double mass) {
+    /**
+     * Constructor to initialize the cloth
+     * @param height height of the cloth
+     * @param width width of the cloth
+     * @param num_particles_row number of rows of particles
+     * @param num_particles_col number of columns of particles
+     * @param mass mass of each particle
+     */
+    Cloth(double height, double width, unsigned long num_particles_row, unsigned long num_particles_col, double mass) {
         this->height = height;
         this->width = width;
         this->num_particles_row = num_particles_row;
         this->num_particles_col = num_particles_col;
-        distance_row = width / (double) num_particles_row;
-        distance_col = height / (double) num_particles_col;
+        distance_row = width / (double) num_particles_col;
+        distance_col = height / (double) num_particles_row;
         distance_diagonal = sqrt(distance_row * distance_row + distance_col * distance_col);
 
         //add particles to the cloth according to the specifications
@@ -63,8 +81,45 @@ public:
                 }
             }
         }
+    }
 
+    /**
+     * Makes the particle at index i,j in the grid immovable. Used to hang the cloth.
+     * @param i Row number of the particle
+     * @param j Column number of the particle
+     */
+    void makeParticleImmovable(int i, int j) {
+        particles[i][j].makeImmovable();
+    }
 
+    /**
+     * Draws the cloth by dividing it into a set of triangles
+     */
+    void draw(Color color) {
+        glClear(GL_COLOR_BUFFER_BIT);
+        glLoadIdentity();
+        glBegin(GL_TRIANGLES);
+        for (int i = 0; i < num_particles_row - 1; ++i) {
+            for (int j = 0; j < num_particles_col - 1; ++j) {
+
+                glColor3d(color.r, color.g, color.b);
+                glVertex3d(particles[i][j].getCurrentPos().x, particles[i][j].getCurrentPos().y,
+                           particles[i][j].getCurrentPos().z);
+                glVertex3d(particles[i][j + 1].getCurrentPos().x, particles[i][j + 1].getCurrentPos().y,
+                           particles[i][j + 1].getCurrentPos().z);
+                glVertex3d(particles[i + 1][j].getCurrentPos().x, particles[i + 1][j].getCurrentPos().y,
+                           particles[i + 1][j].getCurrentPos().z);
+
+                glColor3d(color.r, color.g, color.b);
+                glVertex3d(particles[i + 1][j].getCurrentPos().x, particles[i + 1][j].getCurrentPos().y,
+                           particles[i + 1][j].getCurrentPos().z);
+                glVertex3d(particles[i][j + 1].getCurrentPos().x, particles[i][j + 1].getCurrentPos().y,
+                           particles[i][j + 1].getCurrentPos().z);
+                glVertex3d(particles[i + 1][j + 1].getCurrentPos().x, particles[i + 1][j + 1].getCurrentPos().y,
+                           particles[i + 1][j + 1].getCurrentPos().z);
+            }
+        }
+        glEnd();
     }
 
 
