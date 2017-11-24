@@ -16,7 +16,7 @@ file(GLOB SOURCE_FILES
         *.h
         )
 
-add_executable(Cloth-Simulation ${SOURCE_FILES} main.cpp cmake-build-debug/Particle.h)
+add_executable(Cloth-Simulation ${SOURCE_FILES} main.cpp Particle.h)
 add_executable(main.cpp ${SOURCE_FILES})
 target_link_libraries (Cloth-Simulation ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${GLEW_LIBRARIES} ${OPENGL_glu_LIBRARY})
 target_link_libraries (main.cpp ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${GLEW_LIBRARIES} ${OPENGL_glu_LIBRARY})
