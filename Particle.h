@@ -29,14 +29,43 @@ private:
     dvec3 current_pos; // defines the current position of the particle
     dvec3 old_pos; // defines the old position of the particle
     dvec3 acceleration; // defines the acceleration of the particle
+    dvec3 normal; // defines the normal to the cloth at the position of the particle - used for shading
 
 public:
+    /**
+     * Constructor to initialize the particle
+     * @param current_pos position of the particle
+     * @param mass mass of the particle
+     */
     Particle(dvec3 current_pos, double mass) {
         is_movable = true;
         this->mass = mass;
         this->current_pos = current_pos;
         this->old_pos = current_pos;
         acceleration = dvec3(0, 0, 0);
+        normal = dvec3(0, 0, 0);
+    }
+
+    /**
+     * Update the normal by adding the given update vector
+     * @param update update vector
+     */
+    void updateNormal(dvec3 update) {
+        normal = normal + normalize(update);
+    }
+
+    /**
+     * Resets the normal to 0
+     */
+    void resetNormal() {
+        normal = dvec3(0, 0, 0);
+    }
+
+    /**
+     * Makes the length of the normal 1
+     */
+    void normalizeNormal() {
+        normal = normalize(normal);
     }
 
     /**
