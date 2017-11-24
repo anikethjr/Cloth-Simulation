@@ -1,7 +1,8 @@
 //
 // Created by anikethjr on 24/11/17.
 //
-
+#ifndef CLOTH_SIMULATION_PARTICLE_H
+#define CLOTH_SIMULATION_PARTICLE_H
 
 #include <bits/stdc++.h>
 #include <GL/glut.h>
@@ -11,10 +12,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
-
-
-#ifndef CLOTH_SIMULATION_PARTICLE_H
-#define CLOTH_SIMULATION_PARTICLE_H
 
 using namespace std;
 using namespace glm;
