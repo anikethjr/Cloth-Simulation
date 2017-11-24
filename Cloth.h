@@ -9,6 +9,7 @@
 #include "Particle.h"
 
 #define PI 3.14159265
+#define CONSTRAINT_ITERATIONS 15 // refers to the number of iterations required to satisfy the constraints per frame
 
 using namespace std;
 using namespace glm;
@@ -67,6 +68,52 @@ public:
 
     }
 
+    /**
+     * Funtion to simulate the cloth by constraint satisfaction and subsequent update of particles
+     */
+    void simulateCloth() {
+        // Satisfying the constraints
+
+        for (int i = 0; i < CONSTRAINT_ITERATIONS; i++) // iterating over the constraints multiple times
+        {
+            for (auto constraint: constraints) {
+                constraint.correctParticlePositions(); // correct each particle pair position (constraint satisfaction)
+            }
+        }
+
+        // Now updating the positions of the particles
+        for (int i = 0; i < particles.size(); i++) {
+            for (auto particle: particles[i]) {
+                particle.timeStep();
+            }
+        }
+
+    }
+
+    /**
+     * Function to add gravity (or other force vectors) to all particles
+     * @param force_direction refers to the direction of the force vector
+     */
+    void applyForceAll(dvec3 force_direction) {
+        for (int i = 0; i < particles.size(); i++) {
+            for (auto particle: particles[i]) {
+                particle.applyForce(force_direction); // apply the force to each particle
+            }
+        }
+    }
+
+    /**
+     * Function to apply wind force on all the particles
+     * @param wind_direction refers to the vector containing the wind force attributes (direction and magnitude)
+     */
+    void applyWindForce(dvec3 wind_direction) {
+
+    }
+
+
+
 
 };
+
+
 #endif //CLOTH_SIMULATION_CLOTH_H
