@@ -24,7 +24,6 @@ using namespace glm;
  * Class which is used to define the particles of the cloth
  */
 class Particle {
-private:
     bool is_movable; // to check whether the particle is movable or not
     double mass; // defines the mass of the particle (default = 1)
     dvec3 current_pos; // defines the current position of the particle
@@ -42,7 +41,7 @@ public:
         is_movable = true;
         this->mass = mass;
         this->current_pos = current_pos;
-        this->old_pos = current_pos;
+        old_pos = current_pos;
         acceleration = dvec3(0, 0, 0);
         normal = dvec3(0, 0, 0);
     }
@@ -74,7 +73,7 @@ public:
      * @param force refers to the force vector to be applied on the particle
      */
     void applyForce(dvec3 force) {
-        acceleration += force / mass;
+        acceleration += force / (double) mass;
     }
 
     /**
@@ -99,7 +98,7 @@ public:
     void timeStep() {
         if (is_movable) {
             dvec3 temp = current_pos;
-            current_pos = current_pos - (current_pos - old_pos) * (1.0 - DAMPING_FACTOR) +
+            current_pos = current_pos + (current_pos - old_pos) * (1.0 - DAMPING_FACTOR) +
                           acceleration * pow(TIME_STEP, 2); // gives the new position of the particle
             old_pos = temp;
             resetAcceleration();  // changing the position resets the acceleration of the particle
@@ -124,7 +123,13 @@ public:
         }
     }
 
-
+    /**
+     * Returns the normal
+     * @return the normal
+     */
+    dvec3 getNormal() {
+        return normal;
+    }
 };
 
 #endif //CLOTH_SIMULATION_PARTICLE_H
