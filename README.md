@@ -6,9 +6,9 @@ Steps to get the code running:
 
 1. Install OpenGL and GLUT.
 
-2. Clone the repo using an IDE like CLion.
+2. Clone the repo.
 
-3. Build the projects with the following arguments -lglut -lGL -lGLU
+3. Compile each model using the command "g++-5 *.cpp *.h -std=c++11 -lGL -lglut -lGLU"
 
 4. Run the executables
 
