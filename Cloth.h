@@ -219,49 +219,6 @@ public:
             }
         }
     }
-
-    void resolveCubeCollision(dvec3 pos, double side) {
-        double x_min = pos.x - side * 0.5;
-        double x_max = pos.x + side * 0.5;
-        double y_min = pos.y - side * 0.5;
-        double y_max = pos.y + side * 0.5;
-        double z_min = pos.z - side * 0.5;
-        double z_max = pos.z + side * 0.5;
-
-        for (int i = 0; i < particles.size(); ++i) {
-            for (int j = 0; j < particles[i].size(); ++j) {
-                dvec3 particle_pos = particles[i][j].getCurrentPos();
-                //condition to check if the particle is inside the cube
-                if (particle_pos.x > x_min && particle_pos.x < x_max
-                    && particle_pos.y > y_min && particle_pos.y < y_max
-                    && particle_pos.z > z_min && particle_pos.z < z_max) {
-                    dvec3 direction = particle_pos - pos;
-                    dvec3 normalized_direction = normalize(direction);
-                    vector<double> projected_side_lengths;
-                    vector<dvec3> directions;
-                    directions.push_back(dvec3(side * 0.5, 0, 0));
-                    directions.push_back(dvec3(-side * 0.5, 0, 0));
-                    directions.push_back(dvec3(0, side * 0.5, 0));
-                    directions.push_back(dvec3(0, -side * 0.5, 0));
-                    directions.push_back(dvec3(0, 0, side * 0.5));
-                    directions.push_back(dvec3(0, 0, -side * 0.5));
-
-                    for (int k = 0; k < directions.size(); ++k) {
-                        projected_side_lengths.push_back(abs(dot(normalized_direction, directions[k])));
-                    }
-
-                    double min_projected_side = *min_element(projected_side_lengths.begin(),
-                                                             projected_side_lengths.end());
-                    double len = min_projected_side - length(direction);
-                    long dirind = min_element(projected_side_lengths.begin(),
-                                              projected_side_lengths.end()) - projected_side_lengths.begin();
-
-                    particles[i][j].updatePosition(normalized_direction * len);
-                }
-
-            }
-        }
-    }
 };
 
 
