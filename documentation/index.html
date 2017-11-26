@@ -108,7 +108,7 @@
                     Introduction
                 </h2>
                 <p class="post-subtitle" style="text-align:justify;">
-
+                    KAT Systems presents its magnum opus, Cloth Simulation using Spring-Mass and Internal Energy models. The spring-mass model is based on the <a href="https://viscomp.alexandra.dk/?p=147">tutorial by Jesper Mosegaard</a> and the internal energy model is based on the paper titled <a href="https://ri.cmu.edu/pub_files/pub1/baraff_david_1998_1/baraff_david_1998_1.pdf">"Large Steps in Cloth Simulation" by David Baraff and Andrew Witkin</a>.
                 </p>
 
 
@@ -169,7 +169,10 @@
                     Internal Energy Model
                 </h2>
                 <p class="post-subtitle" style="text-align:justify;">
-                    /**Tanmaya insert your stuff here**/
+                    Energy based cloth simulation is a more complicated and complete method of simulating fabrics. It works by assigning potential energy to the state of the cloth, and then calculating the derivatives of the energy function with respect to the coordinates of the points. The negative of these derivatives provide the forces to be applied on the points. To this end, the sum total of energy is divided into the different distortion components of shear, scale and bend. These energies are further subdivided into contributions by each triangles in case of the shear and scale energies, and each pair of adjacent triangles in case of the bend energies. It is assumed that the contribution by each triangle is independent. To this end, Baraff and Witkin proposed "condition vectors" associated with each of these sub-subdivisions of the potential energy. The energy energy contribution is modeled as directly proportional to the norm of these condition vectors. These condition vectors are a function of both, the world coordinates of the points as well the “UV coordinates”, which can be thought of as nothing but the texture coordinates.
+                    <br><br>
+                    The energy model is known to be quite unstable numerically. Baraff and Witkin proposed the use of the backward Euler integration technique to counter this flaw. However, in the submitted code, the integration technique used is the typical forward Euler. To counter the numerical instability, clamps have been introduced upon the forces derived from the energy, which has been partially successful. In the code, the partial derivatives have been calculated numerically instead of analytically. The performance cost is still minimal as the simulated cloth is fairly small in size.
+
                 </p>
             </div>
 
@@ -186,7 +189,7 @@
                 <br><br>
                 Internal Energy Model:
                 <br>
-                /**Tanmaya put screenshots here**/
+                <img src="img/img3.png">
 
             </div>
             <hr>
@@ -196,10 +199,11 @@
                     Speedbreakers Which Didn't Stop a Bugatti
                 </h2>
                 <p class="post-subtitle" style="text-align:justify;">
-                    The drawing of the cloth using the spring-mass model was particularly hard. The cloth had to be
-                    broken up into a set of triangles and these had to be drawn individually.
+                    The collision between the ball and the cloth in the spring mass model were a bit ugly. This was resolved by reducing the radius of the sphere by a fractional amount so that the collsions are cleaner.
                     <br>
-                    /**Tanmaya add problems here**/
+                    Initially,the normals for each triangle were computed while drawing and directly used. But this lead to a rough cloth simulation. To fix this, all the normals at a vertex were summed up and then the triangles were drawn using these normals. This gave a smoother cloth.
+                    <br><br>
+                    Due to the fact that the energy model is remarkably unstable numerically, and the fact that a simple forward Euler integration method has been used, the instability was quite significant, especially for the bend energies. The instability is perhaps exacerbated by the fact that numerical derivatives have been used instead of analytical ones. The step size is limited by the CPU processing power, so a maximum of 100 steps per second can be reached. 
                 </p>
             </div>
             <hr>
