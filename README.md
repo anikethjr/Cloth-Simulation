@@ -4,7 +4,7 @@ Each model is located in a separate folder.
 
 Steps to get the code running:
 
-1. Install OpenGL and GLUT.
+1. Install OpenGL, GLUT and GLM.
 
 2. Clone the repo.
 
