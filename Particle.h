@@ -13,6 +13,7 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/normal.hpp>
+#include <glm/gtx/vector_angle.hpp>
 
 using namespace std;
 using namespace glm;

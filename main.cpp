@@ -7,31 +7,39 @@
 using namespace std;
 using namespace glm;
 
-dvec3 ballPosition(7, -5, 0); // the center of the ball
+dvec3 ball1Position(7, -5, 0); // the center of the first ball
+//dvec3 ball2Position(4, -5, 2); // the center of the second ball
 double ballRadius = 2; // the radius of the ball
 double ballZ = 0; // counter for used to calculate the z coordinates of the ball
+double ballX = 0;
 double cloth_width = 14;
 double cloth_height = 10;
 unsigned long cloth_nrow = 55;
 unsigned long cloth_ncol = 45;
 double cloth_mass = 1;
+Color ballColor = {0.5, 0.6, 0.1};
+dvec3 cubePosition(7, -5, 0);
+double cubeSide = 2;
+double cubeZ = 0;
+Color cubeColor = {0.5, 0.6, 0.1};
 
-Cloth cloth1(cloth_height, cloth_width, cloth_ncol, cloth_nrow, cloth_mass); // one Cloth object of the Cloth class
+Color clothColorPrimary = {0.9, 0.1, 0.1};
+Color clothColorSecondary = {0.1, 0.1, 0.1};
+dvec3 clothPosition(0, -2, 0);
+
+Cloth cloth1(clothPosition, cloth_height, cloth_width, cloth_ncol, cloth_nrow, cloth_mass);
 dvec3 cameraPosition = dvec3(-6.5, 6, -9.0);
 double roll_angle = 0, pitch_angle = 25, yaw_angle = 0;
 
-/**
- * Function which assembles the various objects and creates the scene
- */
-void renderScene() {
+void renderSceneCube() {
     // calculating positions
-    ballZ++;
-    ballPosition.z = cos(ballZ / 50.0) * 7;
+    cubeZ++;
+    cubePosition.z = cos(cubeZ / 50.0) * 7;
 
     cloth1.applyUniformForceAll(dvec3(0, -0.2, 0) * pow(TIME_STEP, 2)); // add gravity each frame, pointing down
     cloth1.applyTriangleNormalForce(dvec3(0.001, 0, 0.01) * pow(TIME_STEP, 2)); // generate some wind each frame
     cloth1.simulateCloth(); // calculate the particle positions of the next frame
-    cloth1.resolveSphereCollision(ballPosition, ballRadius); // resolve collision with the ball
+    cloth1.resolveCubeCollision(cubePosition, cubeSide); // resolve collision with the ball
 
     //draw cloth
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -57,15 +65,76 @@ void renderScene() {
     glRotated(yaw_angle, 1, 0, 0);
 
     //draw cloth
-    cloth1.draw(Color{1, 0, 0});
+    cloth1.draw(clothColorPrimary, clothColorSecondary);
 
     glPushMatrix(); // to draw the ball we use glutSolidSphere, and need to draw the sphere at the position of the ball
-    glTranslated(ballPosition.x, ballPosition.y,
-                 ballPosition.z); // hence the translation of the sphere onto the ball position
-    glColor3d(0.4f, 0.8f, 0.5f);
-    glutSolidSphere(ballRadius - 0.1, 50,
-                    50); // draw the ball, but with a slightly lower radius, otherwise we could get ugly visual artifacts of cloth penetrating the ball slightly
+    glTranslated(cubePosition.x, cubePosition.y,
+                 cubePosition.z); // hence the translation of the sphere onto the ball position
+    glColor3d(cubeColor.r, cubeColor.b, cubeColor.g);
+    glutSolidCube(cubeSide - 0.1); // draw the cube. side reduced a bit to avoid mminute collisions
     glPopMatrix();
+
+    glutSwapBuffers();
+    glutPostRedisplay();
+}
+
+/**
+ * Function which assembles the various objects and creates the scene with the ball
+ */
+void renderSceneBall() {
+    // calculating positions
+    ballZ++;
+    ball1Position.z = cos(ballZ / 50.0) * 7;
+//    ballX++;
+//    ball2Position.x = cos(ballX / 50.0) * 7;
+
+
+    cloth1.applyUniformForceAll(dvec3(0, -0.2, 0) * pow(TIME_STEP, 2)); // add gravity
+    cloth1.applyTriangleNormalForce(dvec3(0.001, 0, 0.01) * pow(TIME_STEP, 2)); // add wind
+    cloth1.simulateCloth(); // calculate the particle positions
+    cloth1.resolveSphereCollision(ball1Position, ballRadius);
+//    cloth1.resolveSphereCollision(ball2Position, ballRadius);
+
+    //draw cloth
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+
+    glDisable(GL_LIGHTING); // drawing some smooth shaded background
+    glBegin(GL_POLYGON);
+    glColor3d(0.8f, 0.8f, 1.0f);
+    glVertex3d(-200.0f, -100.0f, -100.0f);
+    glVertex3d(200.0f, -100.0f, -100.0f);
+    glColor3d(0.4f, 0.4f, 0.8f);
+    glVertex3d(200.0f, 100.0f, -100.0f);
+    glVertex3d(-200.0f, 100.0f, -100.0f);
+    glEnd();
+    glEnable(GL_LIGHTING);
+
+    //place camera
+    glTranslated(cameraPosition.x, cameraPosition.y, cameraPosition.z);
+
+    //rotate it based on the user input
+    glRotated(roll_angle, 0, 0, 1);
+    glRotated(pitch_angle, 0, 1, 0);
+    glRotated(yaw_angle, 1, 0, 0);
+
+    //draw cloth
+    cloth1.draw(clothColorPrimary, clothColorSecondary);
+
+    glPushMatrix();
+    glTranslated(ball1Position.x, ball1Position.y,
+                 ball1Position.z);
+    glColor3d(ballColor.r, ballColor.b, ballColor.g);
+    glutSolidSphere(ballRadius - 0.1, 64, 64); // draw the sphere. radius reduced a bit to avoid mminute collisions
+    glPopMatrix();
+
+//    glPushMatrix();
+//    glTranslated(ball2Position.x, ball2Position.y,
+//                 ball2Position.z);
+//    glColor3d(ballColor.r,ballColor.b,ballColor.g);
+//    glutSolidSphere(ballRadius - 0.1,64,64); // draw the sphere. radius reduced a bit to avoid mminute collisions
+//    glPopMatrix();
+
 
     glutSwapBuffers();
     glutPostRedisplay();
@@ -191,7 +260,10 @@ int main()
 
     // register callbacks
     glutReshapeFunc(reshape);
-    glutDisplayFunc(renderScene);
+    //use one of the display functions. The first simulates a cube collision
+    // and the second a ball collision
+//    glutDisplayFunc(renderSceneCube);
+    glutDisplayFunc(renderSceneBall);
     glutKeyboardFunc(keyPress);
 
     //light the scene

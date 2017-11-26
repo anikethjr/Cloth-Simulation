@@ -25,6 +25,7 @@ struct Color {
  * Defines the cloth piece
  */
 class Cloth {
+    dvec3 position; //position of the top left end of the cloth
     double height, width; //height and width of the cloth
     unsigned long num_row, num_col; //number of rows and columns of particles respectively
     double distance_row, distance_col; //rest distance between adjacent particles in a row and in a column respectively
@@ -41,7 +42,8 @@ public:
      * @param num_row number of particles in a row
      * @param mass mass of each particle
      */
-    Cloth(double height, double width, unsigned long num_col, unsigned long num_row, double mass) {
+    Cloth(dvec3 pos, double height, double width, unsigned long num_col, unsigned long num_row, double mass) {
+        position = pos;
         this->height = height;
         this->width = width;
         this->num_col = num_col;
@@ -53,7 +55,8 @@ public:
         particles.resize(num_col);
         for (int i = 0; i < num_col; ++i) {
             for (int j = 0; j < num_row; ++j) {
-                particles[i].push_back(Particle(dvec3((double) j * distance_col, -(double) i * distance_row, 0), mass));
+                particles[i].push_back(
+                        Particle(dvec3((double) j * distance_col, -(double) i * distance_row, 0) + position, mass));
             }
         }
 
@@ -108,8 +111,10 @@ public:
 
     /**
      * Draws the cloth by dividing it into a set of triangles
+     * @param primaryColor primary color of the cloth
+     * @param secondaryColor secondary color of the cloth
      */
-    void draw(Color color) {
+    void draw(Color primaryColor, Color secondaryColor) {
         for (int i = 0; i < num_col; ++i) {
             for (int j = 0; j < num_row; ++j) {
                 particles[i][j].resetNormal();
@@ -127,9 +132,9 @@ public:
         glBegin(GL_TRIANGLES);
         for (int i = 0; i < triangles.size(); ++i) {
             if (i % 2 == 0)
-                glColor3d(color.r, color.g, color.b);
+                glColor3d(primaryColor.r, primaryColor.g, primaryColor.b);
             else
-                glColor3d(1, 1, 1);
+                glColor3d(secondaryColor.r, secondaryColor.g, secondaryColor.b);
             for (int j = 0; j < triangles[i].size(); ++j) {
                 dvec3 normal = normalize(triangles[i][j]->getNormal());
                 glNormal3d(normal.x, normal.y, normal.z);
@@ -211,6 +216,49 @@ public:
                     particles[i][j].updatePosition(update);
 
                 }
+            }
+        }
+    }
+
+    void resolveCubeCollision(dvec3 pos, double side) {
+        double x_min = pos.x - side * 0.5;
+        double x_max = pos.x + side * 0.5;
+        double y_min = pos.y - side * 0.5;
+        double y_max = pos.y + side * 0.5;
+        double z_min = pos.z - side * 0.5;
+        double z_max = pos.z + side * 0.5;
+
+        for (int i = 0; i < particles.size(); ++i) {
+            for (int j = 0; j < particles[i].size(); ++j) {
+                dvec3 particle_pos = particles[i][j].getCurrentPos();
+                //condition to check if the particle is inside the cube
+                if (particle_pos.x > x_min && particle_pos.x < x_max
+                    && particle_pos.y > y_min && particle_pos.y < y_max
+                    && particle_pos.z > z_min && particle_pos.z < z_max) {
+                    dvec3 direction = particle_pos - pos;
+                    dvec3 normalized_direction = normalize(direction);
+                    vector<double> projected_side_lengths;
+                    vector<dvec3> directions;
+                    directions.push_back(dvec3(side * 0.5, 0, 0));
+                    directions.push_back(dvec3(-side * 0.5, 0, 0));
+                    directions.push_back(dvec3(0, side * 0.5, 0));
+                    directions.push_back(dvec3(0, -side * 0.5, 0));
+                    directions.push_back(dvec3(0, 0, side * 0.5));
+                    directions.push_back(dvec3(0, 0, -side * 0.5));
+
+                    for (int k = 0; k < directions.size(); ++k) {
+                        projected_side_lengths.push_back(abs(dot(normalized_direction, directions[k])));
+                    }
+
+                    double min_projected_side = *min_element(projected_side_lengths.begin(),
+                                                             projected_side_lengths.end());
+                    double len = min_projected_side - length(direction);
+                    long dirind = min_element(projected_side_lengths.begin(),
+                                              projected_side_lengths.end()) - projected_side_lengths.begin();
+
+                    particles[i][j].updatePosition(normalized_direction * len);
+                }
+
             }
         }
     }
