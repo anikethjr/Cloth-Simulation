@@ -7,6 +7,8 @@
 using namespace std;
 using namespace glm;
 
+double multiplierBall1 = 7;
+double multiplierBall2 = 2;
 dvec3 ball1Position(7, -5, 0); // the center of the first ball
 dvec3 ball2Position(4, -5, 2); // the center of the second ball
 double ballRadius = 2; // the radius of the ball
@@ -31,33 +33,8 @@ double roll_angle = 0, pitch_angle = 25, yaw_angle = 0;
  * Function which assembles the various objects and creates the scene with the ball
  */
 void renderSceneBall() {
-    // calculating positions
-    ballZ++;
-    ball1Position.z = cos(ballZ / 50.0) * 7;
-    ballX++;
-    ball2Position.x = cos(ballX / 50.0) * 7;
-
-
-    cloth1.applyUniformForceAll(dvec3(0, -0.2, 0) * pow(TIME_STEP, 2)); // add gravity
-    cloth1.applyTriangleNormalForce(dvec3(0.001, 0, 0.01) * pow(TIME_STEP, 2)); // add wind
-    cloth1.simulateCloth(); // calculate the particle positions
-    cloth1.resolveSphereCollision(ball1Position, ballRadius);
-    cloth1.resolveSphereCollision(ball2Position, ballRadius);
-
-    //draw cloth
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-
-    glDisable(GL_LIGHTING); // drawing some smooth shaded background
-    glBegin(GL_POLYGON);
-    glColor3d(0.8f, 0.8f, 1.0f);
-    glVertex3d(-200.0f, -100.0f, -100.0f);
-    glVertex3d(200.0f, -100.0f, -100.0f);
-    glColor3d(0.4f, 0.4f, 0.8f);
-    glVertex3d(200.0f, 100.0f, -100.0f);
-    glVertex3d(-200.0f, 100.0f, -100.0f);
-    glEnd();
-    glEnable(GL_LIGHTING);
 
     //place camera
     glTranslated(cameraPosition.x, cameraPosition.y, cameraPosition.z);
@@ -70,23 +47,22 @@ void renderSceneBall() {
     //draw cloth
     cloth1.draw(clothColorPrimary, clothColorSecondary);
 
+    //draw balls
     glPushMatrix();
     glTranslated(ball1Position.x, ball1Position.y,
                  ball1Position.z);
     glColor3d(ballColor.r, ballColor.b, ballColor.g);
-    glutSolidSphere(ballRadius - 0.1, 64, 64); // draw the sphere. radius reduced a bit to avoid mminute collisions
+    glutSolidSphere(ballRadius - 0.1, 64, 64); // draw the sphere. radius reduced a bit to avoid minute collisions
     glPopMatrix();
 
     glPushMatrix();
     glTranslated(ball2Position.x, ball2Position.y,
                  ball2Position.z);
     glColor3d(ballColor.r, ballColor.b, ballColor.g);
-    glutSolidSphere(ballRadius - 0.1, 64, 64); // draw the sphere. radius reduced a bit to avoid mminute collisions
+    glutSolidSphere(ballRadius - 0.1, 64, 64); // draw the sphere. radius reduced a bit to avoid minute collisions
     glPopMatrix();
 
-
     glutSwapBuffers();
-    glutPostRedisplay();
 }
 
 /**
@@ -156,7 +132,7 @@ void keyPress(unsigned char key, int x, int y) {
  */
 void light() {
     glShadeModel(GL_SMOOTH);
-    glClearColor(0.2f, 0.2f, 0.4f, 0.5f);
+    glClearColor(1, 1, 1, 0.5f);
     glClearDepth(1.0f);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
@@ -170,13 +146,13 @@ void light() {
 
     glEnable(GL_LIGHT1);
 
-    GLfloat lightAmbient1[4] = {0.0, 0.0, 0.0, 0.0};
-    GLfloat lightPos1[4] = {1.0, 0.0, -0.2, 0.0};
-    GLfloat lightDiffuse1[4] = {0.5, 0.5, 0.3, 0.0};
+    GLfloat ambient[4] = {0.0, 0.0, 0.0, 0.0};
+    GLfloat pos[4] = {1.0, 0.0, -0.2, 0.0};
+    GLfloat diffuse[4] = {0.5, 0.5, 0.3, 0.0};
 
-    glLightfv(GL_LIGHT1, GL_POSITION, (GLfloat *) &lightPos1);
-    glLightfv(GL_LIGHT1, GL_AMBIENT, (GLfloat *) &lightAmbient1);
-    glLightfv(GL_LIGHT1, GL_DIFFUSE, (GLfloat *) &lightDiffuse1);
+    glLightfv(GL_LIGHT1, GL_POSITION, (GLfloat *) &pos);
+    glLightfv(GL_LIGHT1, GL_AMBIENT, (GLfloat *) &ambient);
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, (GLfloat *) &diffuse);
 
     glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 }
@@ -190,12 +166,25 @@ void reshape(int w, int h) {
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    if (h == 0)
-        gluPerspective(80, (float) w, 1.0, 5000.0);
-    else
-        gluPerspective(80, (float) w / (float) h, 1.0, 5000.0);
+    gluPerspective(100, (float) w / h, 1.0, 50.0);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+}
+
+/**
+ * Handles updates of positions
+ */
+void idle() {
+    // calculating positions
+    ball1Position.z = multiplierBall1 * cos(++ballZ / 50.0);
+    ball2Position.x = multiplierBall2 * cos(++ballX / 50.0);
+
+    cloth1.applyUniformForceAll(dvec3(0, -0.2, 0) * pow(TIME_STEP, 2)); // add gravity
+    cloth1.applyTriangleNormalForce(dvec3(0.001, 0, 0.01) * pow(TIME_STEP, 2)); // add wind
+    cloth1.simulateCloth(); // calculate the particle positions
+    cloth1.resolveSphereCollision(ball1Position, ballRadius);
+    cloth1.resolveSphereCollision(ball2Position, ballRadius);
+    glutPostRedisplay();
 }
 
 int main()
@@ -204,13 +193,14 @@ int main()
     int x = 0;
     glutInit(&x, nullptr);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-    glutInitWindowSize(1280, 720);
+    glutInitWindowSize(800, 600);
     glutCreateWindow("Cloth Simulation");
 
     // register callbacks
     glutReshapeFunc(reshape);
     glutDisplayFunc(renderSceneBall);
     glutKeyboardFunc(keyPress);
+    glutIdleFunc(idle);
 
     //light the scene
     light();
